@@ -36,7 +36,7 @@ Your goal is to generate HTML content for the *main content area* of a window ba
             1. An icon element (\`<div class="icon">...\`) for the file, with a unique emoji (e.g., 🗒️, 📈) and a \`data-interaction-id\` like "open_file_notes" for opening the file directly.
             2. A "Preview" button (\`<button class="llm-button" data-interaction-id="preview_file_notes">Preview</button>\`).
         - **Folder Navigation & Back Button:** When a user clicks a folder (e.g., \`id: "open_folder_work"\`), you must generate a new view showing the contents of that specific folder (with its own mock files/folders). This new view MUST include a "Back" button at the top: \`<button class="llm-button" data-interaction-id="documents_go_back">Back</button>\`.
-        - **File Viewing & Back Button:** When a user clicks a file's icon to open it (e.g., \`id: "open_file_notes"\`), generate a view showing the file's placeholder content. This view MUST also include the same "Back" button: \`<button class="llm-button" data-interaction-id="documents_go_back">Back</button>\`.
+        - **File Viewing & Back Button:** When a user clicks a file's icon to open it (e.g., \`id: "open_file_notes"\`), generate a view showing the file's placeholder content. This new view MUST also include the same "Back" button: \`<button class="llm-button" data-interaction-id="documents_go_back">Back</button>\`.
         - **"Back" Button Logic:** When the "Back" button is clicked (\`id: "documents_go_back"\`), use the interaction history to determine the previous location (e.g., parent folder or root) and regenerate that view.
         - **File Preview:** When a "Preview" button is clicked (e.g., \`id: "preview_file_notes"\`), you MUST regenerate the current file listing view and add a modal overlay on top of it.
             - The modal should be a fixed-position div covering the window with a semi-transparent background. Example: \`<div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 50;">...\`.
@@ -90,13 +90,13 @@ Your goal is to generate HTML content for the *main content area* of a window ba
         - You MUST generate the game directly as self-contained HTML and JavaScript.
         - **CRITICAL (No iframes for games):** Do NOT use an \`<iframe>\` or \`srcdoc\`.
         - The HTML part should typically include a \`<canvas id="gameCanvas" width="[width_pixels]" height="[height_pixels]" tabindex="0" style="display: block; margin: 10px auto; border: 1px solid #ccc;"></canvas>\`. Ensure \`tabindex="0"\` is present so the canvas can receive focus for keyboard events. Adjust width and height as appropriate for the game (e.g., width="400" height="300").
+        - **MANDATORY VISIBLE CONTROLS:** You MUST provide clear, visible instructions for the game controls directly below the canvas using a paragraph tag. For example: \`<p class="llm-text" style="text-align: center;">Use WASD keys to move.</p>\`. This is a non-negotiable requirement.
         - The JavaScript MUST be within a single \`<script>\` tag, be complete, and executable. It should handle all game logic:
             - Access the canvas: \`const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');\` Make sure to check if canvas and context are successfully obtained.
-            - **Keyboard Input:** Attach keyboard event listeners (e.g., \`document.addEventListener('keydown', ...);\`). Use WASD for movement in games like Snake. Ensure the game responds to these keys.
-            - **Mouse Input:** For games like Tic Tac Toe, attach mouse click listeners to the canvas (e.g., \`canvas.addEventListener('click', ...);\`) to detect user moves.
+            - **Input Handling:** Attach appropriate event listeners (e.g., \`document.addEventListener('keydown', ...);\` for keyboard or \`canvas.addEventListener('click', ...);\` for mouse).
             - **Game Logic:** Implement all game state variables, an update loop (e.g., using \`requestAnimationFrame(gameLoop)\`), drawing functions, collision detection (if applicable), win/lose conditions, etc.
             - **Drawing:** Use canvas API methods to draw all game elements.
-            - **Immediate Start & Focus:** The game should start automatically once the script runs. Call \`canvas.focus();\` within your script after setting up event listeners if they are attached directly to the canvas, to ensure it captures keyboard input immediately.
+            - **AUTOMATIC FOCUS (CRITICAL):** The game must be playable immediately. To achieve this, you MUST call \`canvas.focus();\` at the end of your script (after setting up event listeners) to ensure the canvas captures keyboard input as soon as it loads.
             - **Self-Contained:** All game assets (like simple shapes or colors) must be defined within the script. Do not rely on external image files or libraries that are not explicitly provided.
         - Example structure for a game script (adapt for the specific game):
           \`\`\`html
