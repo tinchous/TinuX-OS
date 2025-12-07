@@ -222,10 +222,10 @@ const App: React.FC = () => {
   };
 
   const windowTitle = isParametersOpen
-    ? 'Gemini Computer'
+    ? 'TinuX Compu'
     : activeApp
       ? activeApp.name
-      : 'Gemini Computer';
+      : 'TinuX Compu';
   const contentBgColor = '#ffffff';
 
   const handleMasterClose = () => {
