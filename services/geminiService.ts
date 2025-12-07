@@ -7,29 +7,46 @@ import {GoogleGenAI} from '@google/genai';
 import {APP_DEFINITIONS_CONFIG, getSystemPrompt} from '../constants'; // Import getSystemPrompt and APP_DEFINITIONS_CONFIG
 import {InteractionData} from '../types';
 
-if (!process.env.API_KEY) {
-  // This is a critical error. In a real app, you might throw or display a persistent error.
-  // For this environment, logging to console is okay, but the app might not function.
-  console.error(
-    'API_KEY environment variable is not set. The application will not be able to connect to the Gemini API.',
-  );
-}
+// Helper to safely get API key
+const getApiKey = (): string | undefined => {
+  try {
+    // Check process.env first (for Vercel/Node)
+    if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+      return process.env.API_KEY;
+    }
+  } catch (e) {}
 
-const ai = new GoogleGenAI({apiKey: process.env.API_KEY!}); // The "!" asserts API_KEY is non-null after the check.
+  try {
+    // Check import.meta.env (for Vite)
+    // @ts-ignore
+    if (typeof import.meta !== 'undefined' && import.meta.env) {
+       // @ts-ignore
+       if (import.meta.env.VITE_API_KEY) return import.meta.env.VITE_API_KEY;
+       // @ts-ignore
+       if (import.meta.env.API_KEY) return import.meta.env.API_KEY;
+    }
+  } catch (e) {}
+  
+  return undefined;
+};
 
 export async function* streamAppContent(
   interactionHistory: InteractionData[],
   currentMaxHistoryLength: number, // Receive current max history length
 ): AsyncGenerator<string, void, void> {
-  const model = 'gemini-2.5-flash-lite'; // Updated model
+  const model = 'gemini-2.5-flash';
+  const apiKey = getApiKey();
 
-  if (!process.env.API_KEY) {
+  if (!apiKey) {
+    console.error('API_KEY environment variable is not set.');
     yield `<div class="p-4 text-red-700 bg-red-100 rounded-lg">
       <p class="font-bold text-lg">Configuration Error</p>
-      <p class="mt-2">The API_KEY is not configured. Please set the API_KEY environment variable.</p>
+      <p class="mt-2">The API_KEY is not configured. Please set the API_KEY or VITE_API_KEY environment variable.</p>
     </div>`;
     return;
   }
+
+  const ai = new GoogleGenAI({apiKey: apiKey});
 
   if (interactionHistory.length === 0) {
     yield `<div class="p-4 text-orange-700 bg-orange-100 rounded-lg">
@@ -100,8 +117,6 @@ Generate the HTML content for the window's content area only:`;
     const response = await ai.models.generateContentStream({
       model: model,
       contents: fullPrompt,
-      // Removed thinkingConfig to use default (enabled thinking) for higher quality responses
-      // as this is a general app, not a low-latency game AI.
       config: {},
     });
 

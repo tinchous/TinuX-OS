@@ -17,6 +17,7 @@ export const APP_DEFINITIONS_CONFIG: AppDefinition[] = [
   {id: 'shopping_app', name: 'Shopping', icon: '🛒', color: '#fff3e0'},
   {id: 'gaming_app', name: 'Games', icon: '🎮', color: '#f3e5f5'},
   {id: 'science_app', name: 'Science', icon: '🔬', color: '#e0f2f1'},
+  {id: 'binary_clock_app', name: 'Reloj Binario', icon: '⏱️', color: '#eceff1'},
 ];
 
 export const INITIAL_MAX_HISTORY_LENGTH = 0;
@@ -57,6 +58,15 @@ Your goal is to generate HTML content for the *main content area* of a window ba
     - "Shopping": Has a shopping cart with example list of products.
     - "Games": Has a menu of games that are playable when opened.
     - "Science": Presents various interactive science simulations, like a physics sandbox or a virtual chemistry lab.
+    - "Reloj Binario": Displays a real-time binary clock.
+        - Generate a UI that displays the current time (HH:MM:SS) in Binary Coded Decimal (BCD) or True Binary format. BCD (6 columns) is preferred for readability.
+        - Use a dark background with circular "LED" elements arranged in columns/rows.
+        - You MUST include a self-contained \`<script>\` tag.
+        - The script MUST:
+            1. **Verify all required DOM elements exist** before trying to update them.
+            2. Use \`setInterval\` to run every second.
+            3. **CRITICAL:** Inside the \`setInterval\` callback, check if the main clock container element still exists in the DOM. If it does not (i.e. is null), call \`clearInterval(intervalId)\` and return. This prevents errors when the user changes screens.
+            4. If the element exists, get the current time using \`new Date()\`, convert components to binary, and update the visual state (e.g., change CSS class or background color).
 1.  **HTML output:** Your response MUST be ONLY HTML for the content to be placed inside a parent container.
     - DO NOT include \`\`\`html, \`\`\`, \`<html>\`, \`<body>\`, or any outer window frame elements. These are handled by the framework.
     - Do NOT include \`<style>\` tags, UNLESS it's for a self-contained game as specified in section 6.
@@ -95,6 +105,7 @@ Your goal is to generate HTML content for the *main content area* of a window ba
             - Access the canvas: \`const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');\` Make sure to check if canvas and context are successfully obtained.
             - **Input Handling:** Attach appropriate event listeners (e.g., \`document.addEventListener('keydown', ...);\` for keyboard or \`canvas.addEventListener('click', ...);\` for mouse).
             - **Game Logic:** Implement all game state variables, an update loop (e.g., using \`requestAnimationFrame(gameLoop)\`), drawing functions, collision detection (if applicable), win/lose conditions, etc.
+            - **Game Loop Safety:** Inside your \`gameLoop\` or \`redraw\` function, **check if the canvas element still exists in the DOM**. If \`!document.getElementById('gameCanvas')\`, stop the loop (return and do not request next frame).
             - **Drawing:** Use canvas API methods to draw all game elements.
             - **AUTOMATIC FOCUS (CRITICAL):** The game must be playable immediately. To achieve this, you MUST call \`canvas.focus();\` at the end of your script (after setting up event listeners) to ensure the canvas captures keyboard input as soon as it loads.
             - **Self-Contained:** All game assets (like simple shapes or colors) must be defined within the script. Do not rely on external image files or libraries that are not explicitly provided.
@@ -110,45 +121,23 @@ Your goal is to generate HTML content for the *main content area* of a window ba
               const ctx = canvas.getContext('2d');
               if (!ctx) { console.error('2D context not available!'); return; }
 
-              // --- Game specific variables and logic start here ---
-              // Example for a very simple "game":
-              let x = 50;
-              let y = 50;
-              ctx.fillStyle = 'blue';
-              ctx.fillRect(x, y, 20, 20);
+              // ... game logic ...
 
-              function handleKeyDown(e) {
-                // Basic movement example
-                if (e.key === 'd') x += 10; // Right
-                if (e.key === 'a') x -= 10; // Left
-                if (e.key === 's') y += 10; // Down
-                if (e.key === 'w') y -= 10; // Up
-                redraw();
+              function gameLoop() {
+                // SAFETY CHECK: Stop if canvas is gone
+                if (!document.getElementById('gameCanvas')) {
+                    return;
+                }
+
+                update();
+                draw();
+                requestAnimationFrame(gameLoop);
               }
 
-              function redraw() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = 'blue';
-                ctx.fillRect(x, y, 20, 20);
-              }
-              // --- Game specific variables and logic end here ---
+              // ... event listeners ...
 
-              document.addEventListener('keydown', handleKeyDown);
-
-              // For mouse-based games like Tic Tac Toe, you'd add:
-              // canvas.addEventListener('click', function(event) {
-              //   const rect = canvas.getBoundingClientRect();
-              //   const mouseX = event.clientX - rect.left;
-              //   const mouseY = event.clientY - rect.top;
-              //   // ... game logic for click at (mouseX, mouseY)
-              // });
-
-              canvas.focus(); // Ensure canvas has focus for keyboard events
-              console.log('Game script loaded and initialized.');
-              // Start game loop if you have one, or initial draw.
-              // For dynamic games (Snake, Pong), you'd have a gameLoop with requestAnimationFrame.
-              // For static turn-based games (Tic Tac Toe), redraw might happen on input.
-              redraw(); // Initial draw for the example
+              canvas.focus();
+              gameLoop();
             })();
           </script>
           \`\`\`
