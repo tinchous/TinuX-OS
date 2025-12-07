@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 /* tslint:disable */
-import {GoogleGenAI} from '@google/genai';
 import {APP_DEFINITIONS_CONFIG, getSystemPrompt} from '../constants'; // Import getSystemPrompt and APP_DEFINITIONS_CONFIG
 import {InteractionData} from '../types';
 
@@ -34,7 +33,7 @@ export async function* streamAppContent(
   interactionHistory: InteractionData[],
   currentMaxHistoryLength: number, // Receive current max history length
 ): AsyncGenerator<string, void, void> {
-  const model = 'gemini-2.5-flash';
+  const model = 'gemini-2.5-flash-lite';
   const apiKey = getApiKey();
 
   if (!apiKey) {
@@ -42,6 +41,20 @@ export async function* streamAppContent(
     yield `<div class="p-4 text-red-700 bg-red-100 rounded-lg">
       <p class="font-bold text-lg">Configuration Error</p>
       <p class="mt-2">The API_KEY is not configured. Please set the API_KEY or VITE_API_KEY environment variable.</p>
+    </div>`;
+    return;
+  }
+
+  // Dynamically import GoogleGenAI to fix chunk size warning and avoid top-level load
+  let GoogleGenAI;
+  try {
+    const module = await import('@google/genai');
+    GoogleGenAI = module.GoogleGenAI;
+  } catch (e) {
+    console.error('Failed to load @google/genai SDK:', e);
+    yield `<div class="p-4 text-red-700 bg-red-100 rounded-lg">
+      <p class="font-bold text-lg">System Error</p>
+      <p class="mt-2">Failed to load the AI SDK. Please check your network connection.</p>
     </div>`;
     return;
   }

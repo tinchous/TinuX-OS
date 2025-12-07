@@ -65,8 +65,9 @@ Your goal is to generate HTML content for the *main content area* of a window ba
         - The script MUST:
             1. **Verify all required DOM elements exist** before trying to update them.
             2. Use \`setInterval\` to run every second.
-            3. **CRITICAL:** Inside the \`setInterval\` callback, check if the main clock container element still exists in the DOM. If it does not (i.e. is null), call \`clearInterval(intervalId)\` and return. This prevents errors when the user changes screens.
-            4. If the element exists, get the current time using \`new Date()\`, convert components to binary, and update the visual state (e.g., change CSS class or background color).
+            3. **CRITICAL:** Inside the \`setInterval\` callback, check if the main clock container element still exists in the DOM. If it does not (i.e. is null), call \`clearInterval(intervalId)\` and return.
+            4. **CRITICAL:** When updating elements (e.g. \`textContent\`, \`className\`), ALWAYS check if the element exists first. Example: \`if (element) { element.className = '...'; }\`. This prevents "Cannot set properties of null" errors.
+            5. If the element exists, get the current time using \`new Date()\`, convert components to binary, and update the visual state (e.g., change CSS class or background color).
 1.  **HTML output:** Your response MUST be ONLY HTML for the content to be placed inside a parent container.
     - DO NOT include \`\`\`html, \`\`\`, \`<html>\`, \`<body>\`, or any outer window frame elements. These are handled by the framework.
     - Do NOT include \`<style>\` tags, UNLESS it's for a self-contained game as specified in section 6.
